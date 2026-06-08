@@ -505,7 +505,6 @@ Closures             → functions remembering their scope chain
 
 <details>
 <summary><b>Q1: Execution Context</b></summary>
-<br/>
 
 What gets created before any code runs when JS encounters this file?
 
@@ -549,7 +548,6 @@ After the function returns, the Function Execution Context is destroyed, leaving
 
 <details>
 <summary><b>Q2: Call Stack</b></summary>
-<br/>
 
 What does the call stack look like at the moment `multiply` is executing? And what order do things get popped?
 
@@ -600,7 +598,6 @@ The contexts are popped in this order:
 
 <details>
 <summary><b>Q3: Hoisting</b></summary>
-<br/>
 
 What does this print? Don't run it — reason through it.
 
@@ -640,7 +637,6 @@ Because function declarations are fully hoisted and initialized as the entire fu
 
 <details>
 <summary><b>Q4: var vs let vs const</b></summary>
-<br/>
 
 What does this print, and why?
 
@@ -680,7 +676,6 @@ Because `let` is block-scoped. The variable `i` exists only inside the `for` loo
 
 <details>
 <summary><b>Q5: Closures (the hardest one)</b></summary>
-<br/>
 
 What does this print? Reason through it carefully. Then explain: after `makeMultiplier(2)` returns, is `x` garbage collected? Why or why not?
 

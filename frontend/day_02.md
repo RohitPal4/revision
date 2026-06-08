@@ -21,7 +21,6 @@ You already know the definition. Today we go deeper — practical patterns built
 
 <details>
 <summary><b>View Practical Closure Patterns</b></summary>
-<br/>
 
 ### Pattern 1 — Factory functions
 A factory is a function that returns a new object with private state:
@@ -126,7 +125,6 @@ This is the rule that makes closures predictable. JavaScript uses **lexical scop
 
 <details>
 <summary><b>View Scoping Deep Dive</b></summary>
-<br/>
 
 ### Lexical scoping — scope set at write time
 The scope chain is determined by **where the function is defined** in the source code, not where it's called from.
@@ -227,7 +225,6 @@ Every object in JS has a hidden link to another object called its prototype. Whe
 
 <details>
 <summary><b>View Prototype Deep Dive</b></summary>
-<br/>
 
 ### The hidden link — `__proto__`
 ```javascript
@@ -325,7 +322,6 @@ You already know what `new` does under the hood. Now meet `Object.create()` — 
 
 <details>
 <summary><b>View Object.create() Deep Dive</b></summary>
-<br/>
 
 ### Object.create() — pure prototype linking
 ```javascript
@@ -378,7 +374,6 @@ Every property lookup in JS walks the prototype chain. But sometimes you need to
 
 <details>
 <summary><b>View Properties Deep Dive</b></summary>
-<br/>
 
 ### The difference
 ```javascript
@@ -430,7 +425,6 @@ Object.keys(dog);   // ['name'] — own enumerable only
 
 <details>
 <summary><b>View Class Syntax Deep Dive</b></summary>
-<br/>
 
 ### Side by side — identical behavior, different syntax
 **Pre-ES6 prototype style:**
@@ -512,7 +506,6 @@ Closures
 
                                                 <details>
 <summary><b>Q1 — Closures</b></summary>
-<br/>
 
 What does this print? Reason through every line.
 ```javascript
@@ -552,7 +545,6 @@ Each call to `makeAdder()` creates a new execution context and a new lexical env
 
 <details>
 <summary><b>Q2 — Lexical Scoping</b></summary>
-<br/>
 
 What does this print? Before answering, identify which scope each variable resolves to.
 ```javascript
@@ -601,7 +593,6 @@ It does *not* look at the call stack (`inner → runner → global`). Therefore,
 
 <details>
 <summary><b>Q3 — Prototype Chain</b></summary>
-<br/>
 
 What does this print? Trace every property lookup.
 ```javascript
@@ -945,7 +936,6 @@ Because only a has User.prototype in its prototype chain. b inherits from proto,
 
 <details>
 <summary><b>Q4 — Object.create() vs new</b></summary>
-<br/>
 
 What is the difference between these two, and what does each produce?
 
@@ -1062,7 +1052,6 @@ Because `instanceof` works by checking if `Constructor.prototype` exists anywher
 
 <details>
 <summary><b>Q5 — class as syntactic sugar (the hardest one)</b></summary>
-<br/>
 
 What does this print? Then answer the questions below.
 
@@ -1167,17 +1156,12 @@ Animal.call(this, name);
 ```
 Which executes `this.name = name` inside the child object's context.
 
-**3. Two real differences between classes and constructor functions:**
+**3. Three real differences between classes and constructor functions:**
 1. **Classes cannot be called without `new`**. A regular constructor function like `function User(){}` can be called as `User()`, but `class User{}` will throw a TypeError if called without `new`.
 2. **Class methods are automatically strict mode**. Code inside a `class` body automatically runs in strict mode, preventing global variable leaks and `this` defaulting to `window`.
+3. **Classes are not hoisted**. `new Dog()` before the `class Dog {}` line throws a `ReferenceError` (TDZ). A constructor function declaration would work fine before its definition.
+
+Everything else—instances, prototypes, inheritance, `instanceof`, method lookup—is still built on JavaScript's prototype system.
 
 </details>
-User() → error
-new User() → works
-Class methods run in strict mode automatically
-Constructor functions do not automatically enforce strict mode.
-
-Everything else—instances, prototypes, inheritance, instanceof, method lookup—is still built on JavaScript's prototype system.
-
-You mentioned two differences correctly — but there's a third worth knowing for interviews: classes are not hoisted like function declarations. new Dog() before the class Dog {} line throws a ReferenceError (TDZ, just like let). A constructor function declaration would work fine before its definition. You covered this in the teaching session — just make sure it's in your interview answer too.
 
