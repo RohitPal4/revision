@@ -390,21 +390,42 @@ Output:
 **Do they share the same `x`?**
 ❌ **No.** Each call to `makeAdder()` creates a completely new execution context and a new lexical environment. The returned function forms a closure over that *specific* environment. 
 
-Visualization:
+<details>
+<summary>🔍 <b>View Step-by-Step Breakdown</b></summary>
+
+**Step 1: Create `add5`**
+When `makeAdder(5)` runs, it creates an environment where `x = 5`. The returned function forms a closure over it.
 ```text
 add5
   ↓
 Closure A
   ↓
 x = 5
+```
 
+**Step 2: Create `add10`**
+A completely new execution context is created where `x = 10`.
+```text
 add10
   ↓
 Closure B
   ↓
 x = 10
 ```
-These closures are 100% independent.
+
+**Step 3: Evaluate `add5(3)`**
+Inside `add5`: `x = 5` (from closure), `y = 3` (parameter).
+5 + 3 = **8**
+
+**Step 4: Evaluate `add10(3)`**
+Inside `add10`: `x = 10` (from closure), `y = 3` (parameter).
+10 + 3 = **13**
+
+**Step 5: Evaluate `add5(add10(2))`**
+First, `add10(2)`: `x = 10`, `y = 2` → 12.
+Then, `add5(12)`: `x = 5`, `y = 12` → **17**.
+</details>
+
 </details>
 
 <details>
@@ -442,11 +463,38 @@ outer
 
 **Why doesn't `fn()` see `runner`'s `lang`?**
 Because JavaScript uses **Lexical (Static) Scoping**. Variables are determined by where a function is *defined*, not where it is *called*.
-
 `inner` was created inside `outer`. Therefore its scope chain is:
 `inner` → `outer` → `global`
 
-When `fn()` (which is `inner`) executes, it searches its scope chain. It looks in `inner` (not found), then looks in `outer` (found `"outer"`). It never looks inside `runner` because the scope chain is fixed at write time.
+<details>
+<summary>🔍 <b>View Step-by-Step Breakdown</b></summary>
+
+**Step 1: Global Scope**
+Contains `lang = "global"`, `outer = function`, `runner = function`.
+
+**Step 2: Call `runner()`**
+Inside `runner`: `lang = "runner"`.
+Then `const fn = outer()` executes.
+
+**Step 3: Execute `outer()`**
+Inside `outer`: `lang = "outer"`.
+It returns `inner`. `inner` remembers its surrounding lexical environment:
+```text
+inner
+  ↓
+Closure
+  ↓
+outer scope (lang = "outer")
+```
+
+**Step 4: Call `fn()`**
+This executes `console.log(lang)`.
+JavaScript looks for `lang`:
+1. Current Scope (`inner`): No `lang`.
+2. Parent Scope (`outer`): Found `lang = "outer"`.
+
+It never looks inside `runner` because the scope chain is based on where `inner` was written (lexical scoping).
+</details>
 </details>
 
 <details>
@@ -486,7 +534,19 @@ false
 true
 ```
 
-**The Prototype Chain:**
+<details>
+<summary>🔍 <b>View Step-by-Step Breakdown</b></summary>
+
+**Step 1: Constructor Setup**
+`Person` constructor assigns `this.name`. `Person.prototype` gets `greet()`.
+`Developer` calls `Person.call(this, name)` and assigns `this.lang`.
+
+**Step 2: Set Up Inheritance**
+`Developer.prototype = Object.create(Person.prototype);` establishes the link:
+`Developer.prototype` → `Person.prototype`.
+
+**Step 3: Create Object**
+`const dev = new Developer('Alice', 'JavaScript')` creates:
 ```text
 dev
 │
@@ -494,31 +554,25 @@ dev
 ├── lang = "JavaScript"
 │
 ▼ [[Prototype]]
-Developer.prototype
-│
-├── constructor
-├── code()
+Developer.prototype (contains code())
 │
 ▼ [[Prototype]]
-Person.prototype
-│
-├── greet()
+Person.prototype (contains greet())
 │
 ▼ [[Prototype]]
-Object.prototype
-│
-├── hasOwnProperty()
+Object.prototype (contains hasOwnProperty())
 │
 ▼
 null
 ```
 
 **Property Lookups:**
-- `dev.name`: Found directly on `dev` (own property).
-- `dev.code()`: Not on `dev`. Found on `Developer.prototype`.
-- `dev.greet()`: Not on `dev` or `Developer.prototype`. Found on `Person.prototype`.
-- `dev.hasOwnProperty('greet')`: Looks up the chain to `Object.prototype` to find the method `hasOwnProperty`. Executes it to check if `dev` *itself* has `greet`. Returns `false`.
-- `dev instanceof Person`: Checks if `Person.prototype` exists anywhere in `dev`'s prototype chain. It does, so it returns `true`.
+- `dev.name`: Found directly on `dev` (own property). Output: `Alice`.
+- `dev.code()`: Not on `dev`. Looks up to `Developer.prototype`. Found. Output: `Alice codes in JavaScript`.
+- `dev.greet()`: Not on `dev`, not on `Developer.prototype`. Looks up to `Person.prototype`. Found. Output: `Hi, I'm Alice`.
+- `dev.hasOwnProperty('greet')`: Looks up all the way to `Object.prototype` to find `hasOwnProperty`. Checks if `dev` *itself* has `greet`. No, it's on the prototype. Output: `false`.
+- `dev instanceof Person`: Checks if `Person.prototype` exists anywhere in `dev`'s chain. Yes. Output: `true`.
+</details>
 </details>
 
 <details>
@@ -541,53 +595,142 @@ b.name = 'Bob';
 
 **Answer:**
 
-**Prototype Chains:**
+- `a instanceof User` → **`true`**
+- `b instanceof User` → **`false`**
+- `a.hasOwnProperty('sayHi')` → **`false`**
+- `b.hasOwnProperty('sayHi')` → **`false`**
+
+<details>
+<summary>🔍 <b>View Step-by-Step Breakdown</b></summary>
+
+**Approach A — Using `new`**
+What `new User('Alice')` does internally:
+1. Creates an empty object `{}`.
+2. Sets its prototype to `User.prototype`.
+3. Calls `User.call(newObject, 'Alice')` which adds `name = 'Alice'`.
+4. Returns the object `a`.
+
+Prototype Chain for `a`:
 ```text
-a → User.prototype → Object.prototype → null
-b → proto → Object.prototype → null
+a (name = "Alice")
+ ↓
+User.prototype (sayHi())
+ ↓
+Object.prototype
+ ↓
+null
 ```
 
-**instanceof Checks:**
-- `a instanceof User` → **`true`** (Because `User.prototype` is in `a`'s prototype chain).
-- `b instanceof User` → **`false`** (Because `User.prototype` is NOT in `b`'s prototype chain. `b` inherits directly from `proto`).
+**Approach B — Using `Object.create`**
+What `Object.create(proto)` does:
+1. Creates an empty object.
+2. Sets its prototype directly to `proto`.
+3. We then manually set `b.name = 'Bob'`.
 
-Both `a.hasOwnProperty('sayHi')` and `b.hasOwnProperty('sayHi')` return `false` because `sayHi` is an inherited property in both cases.
+Prototype Chain for `b`:
+```text
+b (name = "Bob")
+ ↓
+proto (sayHi())
+ ↓
+Object.prototype
+ ↓
+null
+```
+
+**instanceof Check:**
+`obj instanceof Constructor` checks if `Constructor.prototype` exists in `obj`'s chain.
+- `a instanceof User`: `User.prototype` is in `a`'s chain. (`true`)
+- `b instanceof User`: `User.prototype` is NOT in `b`'s chain. `b` inherits directly from `proto`. (`false`)
+</details>
 </details>
 
 <details>
 <summary><b>Q5: ES6 class internals</b></summary>
 <br/>
 
-In the following class definition, what do `extends` and `super(name)` actually compile down to in pre-ES6 terms?
+What does this print? Then answer the questions below about what `class`, `extends`, and `super` compile down to.
 ```javascript
-class Animal {}
+class Animal {
+  constructor(name) { this.name = name; }
+  speak() { return `${this.name} makes a sound`; }
+}
+
 class Dog extends Animal {
   constructor(name, breed) {
     super(name);
     this.breed = breed;
   }
+  bark() { return `${this.name} barks`; }
 }
+
+const d = new Dog('Rex', 'Labrador');
+
+console.log(d.name);
+console.log(d.breed);
+console.log(d.bark());
+console.log(d.speak());
+console.log(d.hasOwnProperty('bark'));
+console.log(d.hasOwnProperty('name'));
+console.log(typeof Dog);
+console.log(d instanceof Dog);
+console.log(d instanceof Animal);
 ```
 
 **Answer:**
-
-**1. What does `extends` compile down to?**
-It links the prototype chains. Roughly equivalent to:
-```javascript
-Dog.prototype = Object.create(Animal.prototype);
-Dog.prototype.constructor = Dog;
+Output:
+```text
+Rex
+Labrador
+Rex barks
+Rex makes a sound
+false
+true
+function
+true
+true
 ```
 
-**2. What does `super(name)` compile down to?**
-It calls the parent constructor inside the current context. Roughly equivalent to:
-```javascript
-Animal.call(this, name);
+1. **`extends`** compiles to: `Dog.prototype = Object.create(Animal.prototype); Dog.prototype.constructor = Dog;`
+2. **`super(name)`** compiles to: `Animal.call(this, name);`
+3. **3 Real differences**: Classes are not hoisted (Temporal Dead Zone), they automatically run in strict mode, and they throw an error if called without `new`.
+
+<details>
+<summary>🔍 <b>View Step-by-Step Breakdown</b></summary>
+
+**Step 1: Create Classes Internally**
+`class Animal` becomes `function Animal` with `Animal.prototype.speak`.
+`class Dog extends Animal` becomes `function Dog` and establishes `Dog.prototype` linking to `Animal.prototype`.
+
+**Step 2: Create Object `d`**
+`const d = new Dog('Rex', 'Labrador')` creates the prototype chain:
+```text
+d (name = "Rex", breed = "Labrador")
+ │
+▼ [[Prototype]]
+Dog.prototype (bark())
+ │
+▼ [[Prototype]]
+Animal.prototype (speak())
+ │
+▼ [[Prototype]]
+Object.prototype
+ │
+▼
+null
 ```
 
-**3. What are the 3 real differences between `class` and constructor functions?**
-1. **Hoisting:** Function declarations are hoisted. Classes are NOT hoisted (they sit in the Temporal Dead Zone).
-2. **Strict Mode:** Code inside a `class` body automatically runs in strict mode.
-3. **Execution Context:** Classes throw a `TypeError` if you try to invoke them without the `new` keyword. Constructor functions can accidentally be invoked without `new` (polluting the global object).
+**Step 3: Property Lookups & Execution**
+- `d.name`: Found directly on `d`. -> `Rex`
+- `d.breed`: Found directly on `d`. -> `Labrador`
+- `d.bark()`: Found on `Dog.prototype`. `this.name` is "Rex". -> `Rex barks`
+- `d.speak()`: Found on `Animal.prototype`. `this.name` is "Rex". -> `Rex makes a sound`
+- `d.hasOwnProperty('bark')`: Is `bark` directly on `d`? No, it's on `Dog.prototype`. -> `false`
+- `d.hasOwnProperty('name')`: Is `name` directly on `d`? Yes. -> `true`
+- `typeof Dog`: Classes are functions under the hood. -> `function`
+- `d instanceof Dog`: `Dog.prototype` is in the chain. -> `true`
+- `d instanceof Animal`: `Animal.prototype` is in the chain. -> `true`
+</details>
 </details>
 
 ---
